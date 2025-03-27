@@ -1,0 +1,93 @@
+<!--
+*************************************************************
+*   File name: sign.html
+*   Purpose: INFO152-Project, create html for sign up page.
+*   Author: Diya Singh
+*   DrexelId: ds3899
+*   Complete Date: 2025/03/20
+*************************************************************
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/sign.css">
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&display=swap" rel="stylesheet">
+    <title>Sign In | Little Chef's Bakery</title>
+</head>
+<body>
+    <!--linking all html pages to eachother-->
+    <div class="main">
+        <div class="navbar">
+            <div class="nav-links">]
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+                <a href="log.html">Log In</a>
+                <a href="sign.html">Sign Up</a>
+            </div>
+            <div class="icon">
+                <h1 class="logo">Little Chef's Bakery</h1>
+            </div>
+        </div>
+
+
+        <div class="container">
+            <h2 class="welcome-title">Sign Up</h2>
+
+
+            <!-- creating sign up textboxes -->
+            <form id="registerForm">
+                <select id="userType" required>
+                    <option value="baker">Baker</option>
+                    <option value="customer">Customer</option>
+                </select>
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="text" id="registerUsername" placeholder="Username" required>
+                <input type="password" id="registerPassword" placeholder="Password" required>
+                <button type="submit">Create Account</button>
+            </form>
+
+
+            <!-- provides direct link to login after creating account -->
+            <p>Already have an account? <a href="log.html">Log in here</a></p>
+        </div>
+
+        <footer id="copyright-footer">
+        
+        </footer>
+        
+        <script>
+            fetch('../php/footer.php')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('copyright-footer').innerHTML = data;
+                });
+        </script>
+    </div>
+
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const userType = document.getElementById('userType').value;
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const email = document.getElementById('registerEmail').value;
+            const response = await fetch('../php/sign.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userType, username, password, email })
+            });
+
+
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                window.location.href = "log.html"; // goes straight to to login page after creating account
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,45 @@
+DROP TABLE IF EXISTS Purchases;
+DROP TABLE IF EXISTS Bakery;
+DROP TABLE IF EXISTS Sellers;
+DROP TABLE IF EXISTS Customers;
+
+
+CREATE TABLE Sellers (
+    sellerID INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    pass VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE Bakery (
+  foodID INT AUTO_INCREMENT PRIMARY KEY,
+  categoryName VARCHAR(255) NOT NULL,
+  userID INT,
+  Food_Name VARCHAR(255) NOT NULL,
+  image_path VARCHAR(255) NOT NULL,
+  price INT NOT NULL,
+  FOREIGN KEY (userID) REFERENCES Sellers(sellerID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Customers(
+    customerID INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    pass VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE Purchases (
+    purchaseID INT AUTO_INCREMENT PRIMARY KEY, 
+    customerID INT NOT NULL,
+    sellerID INT NOT NULL,
+    foodID INT NOT NULL,
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    quantity INT NOT NULL,
+    total_price DECIMAL(10, 2) NOT NULL, 
+    FOREIGN KEY (customerID) REFERENCES Customers(customerID) ON DELETE CASCADE,
+    FOREIGN KEY (sellerID) REFERENCES Sellers(sellerID) ON DELETE CASCADE,
+    FOREIGN KEY (foodID) REFERENCES Bakery(foodID) ON DELETE CASCADE
+);

@@ -1,0 +1,90 @@
+<!--
+*************************************************************
+*   File name: index.html
+*   Purpose: INFO152-Project, create html for home page.
+*   Author: Diya Singh
+*   DrexelId: ds3899
+*   Complete Date: 2025/03/20
+*************************************************************
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WELCOME!</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!--linking all html pages to eachother-->
+    <div class="main">
+        <div class="navbar">
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="menu.html">Menu</a>
+                <a href="log.html">Log In</a>
+                <a href="sign.html">Sign Up</a>
+            </div>
+            <div class="icon">
+                <h1 class="logo">Little Chef's Bakery</h1>
+            </div>
+        </div>
+        <h2 class="welcome-title">Welcome to Little Chef's Bakery!</h2>
+
+
+        <div class="sweets-container">
+            <h2>Sweets of the Week</h2>
+
+
+            <!-- 3 divs display the 3 sweets of the week on the homepage. -->
+            <div class="sweets-item">
+                <img src="../images/rainbow.jpeg" alt="Sweet 1">
+                <div class="sweets-info">
+                    <h3>Rainbow Explosion</h3>
+                    <p>Delicious multi-colored cupcake with three cake flavors of your choice with a creamy cotton candy flavored frosting; topped with rainbow candy strips!! <strong> Created by Georgia Marie; contact at gmarie@gmail.com to learn more!</strong></p>
+                </div>
+            </div>
+            <div class="sweets-item">
+                <img src="../images/pista.jpeg" alt="Sweet 2">
+                <div class="sweets-info">
+                    <h3>Dubai Pistachio</h3>
+                    <p>Made with vanilla cake with a rich pistachio frosting and chocolate filling; topping with fresh raspberries!! <strong> Created by Karen Smith; contact at karen.smith@gmail.com to learn more!</strong></p>
+                </div>
+            </div>
+            <div class="sweets-item">
+                <img src="../images/seaa.jpeg" alt="Sweet 3">
+                <div class="sweets-info">
+               <h3>Under The Sea</h3>
+               <p>Made with vanilla cake topped with fluffy light blue frosting and vanilla custard filling; topped with fun edible trinkets made of white chocolate!! <strong> Created by John Warren; contact at john.warren@gmail.com to learn more!</strong></p>
+               </div>
+           </div>
+       </div>
+
+    <footer id="copyright-footer">
+        <style>
+            .site-footer {
+                background-color: #333;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                font-family: 'Antonio', sans-serif; 
+            }
+            </style>
+        <!-- used to put up footer content on this page -->
+    </footer>
+    
+    <script>
+        fetch('../php/footer.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('copyright-footer').innerHTML = data;
+            });
+    </script>
+   </div>
+
+
+
+
+</body>
+</html>

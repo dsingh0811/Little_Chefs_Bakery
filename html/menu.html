@@ -1,0 +1,428 @@
+<!--
+*************************************************************
+*   File name: menu.html
+*   Purpose: INFO152-Project, create html for menu page.
+*   Author: Diya Singh
+*   DrexelId: ds3899
+*   Complete Date: 2025/03/20
+*************************************************************
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WELCOME!</title>
+  <link rel="stylesheet" href="../css/menu.css">
+  <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&display=swap" rel="stylesheet">
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      checkLoginStatus();
+      
+      // fetch user's login status 
+      fetch("../php/menu.php")
+        .then(response => {
+          console.log("Response status:", response.status);
+          // check if the response is empty/invalid JSON
+          if (!response.ok) {
+            throw new Error("Server error: " + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Data received:", data);
+          
+          if (data.error) {
+            document.getElementById("login-message").innerText = "Please log in to access the menu.";
+            document.getElementById("login-message").style.display = "block"; 
+            document.getElementById("menu-content").style.display = "none"; 
+          } else {
+            
+            document.getElementById("login-message").style.display = "none"; 
+            document.getElementById("menu-content").style.display = "block"; 
+
+            if (data.userType === "baker") {
+              document.getElementById("seller-section").style.display = "block"; 
+              document.getElementById("customer-section").style.display = "none"; 
+            
+              loadBakerMenu(data.menuItems);
+            } else {
+              document.getElementById("customer-section").style.display = "block"; 
+              document.getElementById("seller-section").style.display = "none"; 
+              
+              loadCustomerMenu(data.menuItems);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Detailed error:', error);
+          document.getElementById("login-message").innerText = "Error fetching user data: " + error.message;
+          document.getElementById("login-message").style.display = "block";
+        });
+
+      // displays notifications
+      function showNotification(message, type = 'info') {
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+          <span class="notification-close">&times;</span>
+          ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', function() {
+          document.body.removeChild(notification);
+        });
+        
+        
+        setTimeout(() => {
+          notification.classList.add('show');
+        }, 10);
+        
+        
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            notification.classList.remove('show');
+            setTimeout(() => {
+              if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+              }
+            }, 300);
+          }
+        }, 5000);
+      }
+
+      // checking login status and updating navigation bar's links
+      function checkLoginStatus() {
+        const loginLink = document.getElementById("login-link");
+        
+        // checks if the user is logged in 
+        fetch("../php/check_session.php")
+          .then(response => response.json())
+          .then(data => {
+            if (data.loggedIn) {
+              
+              loginLink.style.display = "none";
+            } else {
+              
+              loginLink.style.display = "inline-block";
+            }
+          })
+          .catch(error => {
+            console.error("Error checking session:", error);
+          });
+      }
+
+      // loads the menu for customers
+      function loadCustomerMenu(menuItems) {
+        const menuContainer = document.getElementById("menu-items");
+        menuContainer.style.display = "block"; 
+        
+        if (menuItems && Array.isArray(menuItems) && menuItems.length > 0) {
+            console.log("Loading customer menu with items:", menuItems);
+            menuContainer.innerHTML = ""; 
+            menuItems.forEach(item => {
+              const div = document.createElement("div");
+              div.classList.add("menu-item");
+              
+              // displays menu item without edit controls for customers
+              div.innerHTML = `
+                  <p>${item.Food_Name} - $${item.price} by ${item.seller_username}! Contact at: ${item.email}</p>
+                  <img src="../uploads/${item.image_path}" alt="${item.Food_Name}" width="100">
+              `;
+              menuContainer.appendChild(div);
+            });
+        } else {
+            console.log("No menu items to display for customers");
+            menuContainer.innerHTML = "<p>No baked goods available.</p>";
+        }
+      }
+
+      
+      function loadBakerMenu(menuItems) {
+        console.log("Loading baker menu with items:", menuItems);
+        
+        // creates container for baker's menu if it doesn't exist
+        let bakerMenuContainer = document.getElementById("baker-menu-items");
+        if (!bakerMenuContainer) {
+          bakerMenuContainer = document.createElement("div");
+          bakerMenuContainer.id = "baker-menu-items";
+          document.getElementById("seller-section").appendChild(bakerMenuContainer);
+        }
+        
+        if (menuItems && Array.isArray(menuItems) && menuItems.length > 0) {
+            bakerMenuContainer.innerHTML = "<h3>Your Menu Items</h3>"; // Clear previous and add heading
+            
+            menuItems.forEach(item => {
+              const div = document.createElement("div");
+              div.classList.add("menu-item");
+              
+              // displays menu item with edit controls for bakers
+              div.innerHTML = `
+                  <p>${item.Food_Name} - $${item.price}</p>
+                  <img src="../uploads/${item.image_path}" alt="${item.Food_Name}" width="100">
+                  <button class="delete-btn" data-id="${item.Food_ID}">Delete</button>
+                  <button class="update-btn" data-id="${item.Food_ID}" 
+                    data-name="${item.Food_Name}" 
+                    data-price="${item.price}" 
+                    data-image="${item.image_path}">Update</button>
+              `;
+              bakerMenuContainer.appendChild(div);
+            });
+            
+            
+            document.querySelectorAll(".delete-btn").forEach(button => {
+              button.addEventListener("click", function() {
+                const itemId = this.dataset.id;
+                deleteMenuItem(itemId);
+              });
+            });
+
+            document.querySelectorAll(".update-btn").forEach(button => {
+              button.addEventListener("click", function() {
+                const itemId = this.dataset.id;
+                const name = this.dataset.name;
+                const price = this.dataset.price;
+                const image = this.dataset.image;
+                openUpdateForm(itemId, name, price, image);
+              });
+            });
+        } else {
+            console.log("No menu items to display for baker");
+            bakerMenuContainer.innerHTML = "<h3>Your Menu Items</h3><p>You haven't added any items yet.</p>";
+        }
+      }
+
+      
+      function openUpdateForm(itemId, name, price, image) {
+        
+        let overlay = document.getElementById("overlay");
+        if (!overlay) {
+          overlay = document.createElement("div");
+          overlay.id = "overlay";
+          overlay.className = "overlay";
+          document.body.appendChild(overlay);
+        }
+        
+        
+        let updateForm = document.getElementById("updateForm");
+        if (!updateForm) {
+          updateForm = document.createElement("form");
+          updateForm.id = "updateForm";
+          updateForm.innerHTML = `
+            <h3>Update Menu Item</h3>
+            <div class="form-group">
+              <label for="update_food_name">Food Name</label>
+              <input type="text" id="update_food_name" name="food_name" required>
+            </div>
+            <div class="form-group">
+              <label for="update_price">Price</label>
+              <input type="number" id="update_price" name="price" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="update_category">Category (optional)</label>
+              <input type="text" id="update_category" name="category">
+            </div>
+            <div class="form-group">
+              <label for="update_food_image">New Image (optional)</label>
+              <input type="file" id="update_food_image" name="food_image" accept="image/*">
+            </div>
+            <input type="hidden" id="update_food_id" name="food_id">
+            <div class="button-group">
+              <button type="button" id="cancel-update" class="secondary">Cancel</button>
+              <button type="submit" class="primary">Update Item</button>
+            </div>
+          `;
+          document.body.appendChild(updateForm);
+          
+          
+          updateForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData(updateForm);
+            formData.append('action', 'update');
+            submitUpdate(formData);
+          });
+          
+         
+          document.getElementById("cancel-update").addEventListener("click", function() {
+            closeUpdateForm();
+          });
+        }
+        
+      
+        document.getElementById("update_food_name").value = name;
+        document.getElementById("update_price").value = price;
+        document.getElementById("update_food_id").value = itemId;
+        
+      
+        overlay.style.display = "block";
+        updateForm.style.display = "block";
+      }
+      
+      function closeUpdateForm() {
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("updateForm").style.display = "none";
+      }
+
+      function deleteMenuItem(itemId) {
+        // creates form data for proper content-type handling
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('food_id', itemId);
+
+        fetch('../php/menu.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+            console.log("Delete response:", data);
+            if (data.success) {
+              showNotification(data.message, 'success');
+              
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            } else {
+              showNotification(data.message || "Error deleting item", 'error');
+            }
+        })
+        .catch(error => {
+          console.error("Error deleting item:", error);
+          showNotification("An error occurred: " + error.message, 'error');
+        });
+      }
+
+      function submitUpdate(formData) {
+        fetch('../php/menu.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Update response:", data);
+            closeUpdateForm(); 
+            
+            if (data.success) {
+              showNotification(data.message, 'success');
+            
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            } else {
+              showNotification(data.message || "Error updating item", 'error');
+            }
+        })
+        .catch(error => {
+            console.error("Error updating item:", error);
+            showNotification("An error occurred while updating the item: " + error.message, 'error');
+        });
+      }
+
+      
+      const uploadForm = document.getElementById("uploadForm");
+      if (uploadForm) {
+        uploadForm.addEventListener("submit", function (event) {
+          event.preventDefault(); 
+
+          // sends the form info to the server via fetch
+          const formData = new FormData(uploadForm);
+          fetch("../php/upload.php", {
+            method: "POST",
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log("Upload response:", data);
+            if (data.success) {
+              showNotification(data.message, 'success');
+              uploadForm.reset();
+
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            } else {
+              showNotification(data.message || "Error uploading item", 'error');
+            }
+          })
+          .catch(error => {
+            console.error("Error during upload:", error);
+            showNotification("An error occurred during upload: " + error.message, 'error');
+          });
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="main">
+    <div class="navbar">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="log.html" id="login-link">Log In</a> 
+        <a href="sign.html">Sign Up</a>
+      </div>
+      <div class="icon">
+        <h1 class="logo">Little Chef's Bakery</h1>
+      </div>
+    </div>
+
+    <!-- login notif -->
+    <p id="login-message" style="color: red; text-align: center; font-weight: bold; display: none;">
+      Log In to See Menu
+    </p>
+
+    <div id="menu-content" style="display: none;">
+      <h2 class="welcome-title">Menu:</h2>
+      <div id="seller-section" style="display: none;">
+        <h2>Upload Your Baked Goods</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="text" id="food_name" name="food_name" placeholder="Food Name" required>
+          <input type="text" id="category" name="category" placeholder="Category" required>
+          <input type="number" id="price" name="price" placeholder="Price" required>
+          <input type="file" id="food_image" name="food_image" required>
+          <button type="submit">Upload</button>
+        </form>
+        
+      </div>
+
+      <div id="customer-section" style="display: none;">
+        <h2 class="welcome-title">Available Baked Goods!!</h2>
+        <div id="menu-items"></div>
+      </div>
+    </div>
+    <footer id="copyright-footer">
+        
+    </footer>
+    
+    <script>
+        
+        fetch('../php/footer.php')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('copyright-footer').innerHTML = data;
+            });
+    </script>
+  </div>
+  
+</body>
+</html>
